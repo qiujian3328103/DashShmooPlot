@@ -1,7 +1,7 @@
 import dash
 from dash import dcc
 from dash import html
-from dash.dependencies import Input, Output, ClientsideFunction
+from dash.dependencies import Input, Output, ClientsideFunction, State
 import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
@@ -11,6 +11,9 @@ import pathlib
 import plotly.graph_objects as go
 from data_convert import create_shmoo_plot, read_shmoo_data
 from test_shmoo_data import test_shmoo_data
+import openpyxl
+import io 
+import base64
 app = dash.Dash(
     __name__,
     external_stylesheets=["/assets/Bootstrap-css.css", "/assets/styles.css"]
@@ -101,6 +104,7 @@ def generate_control_card():
                                 dbc.Button("Analyze File", id="analyze-btn", n_clicks=0, color="primary", className="me-2"),
                                 dbc.Button("Download", id="download-btn", n_clicks=0, color="primary", className="me-2"),
                                 dbc.Button("Reset", id="reset-btn", n_clicks=0, color="danger", className="me-2"),
+                                html.Label("", id="download_container")
                             ],
                             loading_state={
                                 "is_loading": True,
@@ -318,6 +322,53 @@ def update_selected_test_program(die_value, test_program_value, result_dict):
 
     return go.Figure(), ""
 
+
+@app.callback(
+    Output('download-btn', 'href'),
+    [Input('download-btn', 'n_clicks'), 
+    State("Shmoo_Data_Dict", 'data')] 
+)
+def generate_excel_file(n_clicks, result_dict):
+    if n_clicks:
+        # Create a BytesIO object to hold the Excel file contents
+        excel_buffer = io.BytesIO()
+
+        # Create the workbook
+        workbook = openpyxl.Workbook()
+
+        # Iterate over result_dict
+        for die in result_dict:
+            sheet_name = die 
+            sheet = workbook.create_sheet(title=sheet_name)  # Create a new sheet with the desired name
+            test_data = result_dict[die]
+            current_row_index = 0  # Initialize the current row index
+
+            # Iterate over test_program_name
+            for test_program_name in test_data:
+                test_info =  test_data[test_program_name]["test_info"]
+                for cell_data in test_info.split("\n"):
+                    # print(cell_data)
+                    sheet.cell(row=current_row_index + 1, column=1).value = cell_data
+                    current_row_index += 1
+                shmoo_data = test_data[test_program_name]["shmoo_data"]
+                print(shmoo_data)
+                #Iterate over shmoo_data
+                for index, row_data in enumerate(shmoo_data):
+                    print(row_data)
+                    for column2, cell_value in enumerate(row_data):
+                        sheet.cell(row=index + current_row_index + 1, column=column2 + 1).value = cell_value
+        
+        # Save the workbook to the BytesIO object
+        workbook.save(excel_buffer)
+
+        # Set the BytesIO object position to the start of the stream
+        excel_buffer.seek(0)
+
+        # Generate a download link for the Excel file
+        href = f'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{base64.b64encode(excel_buffer.read()).decode()}'
+        return href
+    
+    return ''
 # @app.callback(
 #     Output("patient_volume_hm", "figure"),
 #     [Input("analyze-btn", "n_clicks")],

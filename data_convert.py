@@ -6,9 +6,9 @@ def addSquare(fig, x0, y0, x1, y1, voltage, freq, fill_color, result):
 
     lineCol = "black"
     if result == 0:
-        pass_fail = "Pass"
-    else:
         pass_fail = "Fail"
+    else:
+        pass_fail = "Pass"
     fig.add_trace(
         go.Scatter(
             x=[x0,x0,x1,x1,x0], 
