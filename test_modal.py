@@ -53,3 +53,55 @@ def toggle_modal_and_update_data(open_clicks, close_clicks, is_open):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
+Names Default To Here(1);
+dt = Current Data Table();
+
+// Define a dialog for selecting columns
+dlg = Column Dialog(
+    ex_y = ColList( "Select Value Column", Min Col( 1 ), Max Col( 1 ), Data Type( "Numeric" ) ),
+    ex_x = ColList( "Select Group By Column", Min Col( 1 ),  Max Col( 1 ) )
+);
+
+// Check if the user clicked OK
+If( dlg["Button"] == "OK",
+	Show("test");
+    valueCol = dlg["ex_y"];
+    groupCol = dlg["ex_x"];
+    
+    // Debugging statements
+    Show( valueCol );
+    Show( groupCol );
+
+
+    // Ensure columns are selected
+    If( Is Empty( valueCol ) | Is Empty( groupCol ),
+        Throw( "Please select both a value column and a group-by column." )
+    );
+
+    // Add CDF column
+    dt << New Column( "CDF",
+        Numeric,
+        Continuous,
+        Formula( Col Rank( dt:valueCol ) * 100 / ( Col Number( dt:valueCol, dt:groupCol ) + 1 ) )
+    );
+
+    // Create CDF plot
+    dt << Graph Builder(
+        Size( 533, 367 ),
+        Variables(
+            X( Eval( valueCol ) ),
+            Y( :CDF )
+        ),
+        Elements(
+            Line(
+                X,
+                Y,
+                Legend( 4 )
+            )
+        )
+    );
+);
+
+
