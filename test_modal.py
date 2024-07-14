@@ -65,43 +65,39 @@ dlg = Column Dialog(
 );
 
 // Check if the user clicked OK
-If( dlg["Button"] == "OK",
+If( dlg["Button"] == 1,
 	Show("test");
-    valueCol = dlg["ex_y"];
+	valueCol = dlg["ex_y"];
     groupCol = dlg["ex_x"];
     
     // Debugging statements
     Show( valueCol );
     Show( groupCol );
-
-
-    // Ensure columns are selected
+    
+        // Ensure columns are selected
     If( Is Empty( valueCol ) | Is Empty( groupCol ),
         Throw( "Please select both a value column and a group-by column." )
     );
-
+    
+    
     // Add CDF column
     dt << New Column( "CDF",
         Numeric,
         Continuous,
-        Formula( Col Rank( dt:valueCol ) * 100 / ( Col Number( dt:valueCol, dt:groupCol ) + 1 ) )
+        Formula( Col Rank( dt:valueCol ) * 100 / ( Col Number( dt:valueCol, dt:groupCol ) + 1 ))
     );
 
-    // Create CDF plot
+	// Create CDF plot
     dt << Graph Builder(
         Size( 533, 367 ),
         Variables(
             X( Eval( valueCol ) ),
-            Y( :CDF )
+            Y( :CDF ),
+            Overlay(Eval (groupCol)),
         ),
-        Elements(
-            Line(
-                X,
-                Y,
-                Legend( 4 )
-            )
-        )
+        Elements( Points(X,Y,Legend( 10 ))),
     );
+
 );
 
 
