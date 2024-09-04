@@ -416,3 +416,112 @@ def create_edit_sbl_modal():
         width='80vw',
     )
 
+
+
+from dash.dependencies import Input, Output, State, MATCH, ALL
+from dash.exceptions import PreventUpdate
+import sqlite3
+
+@app.callback(
+    [
+        Output({'type': 'edit-input', 'key': MATCH}, 'value'),
+        Output('modal-edit-sbl', 'title'),
+        Output('modal-edit-sbl', 'visible'),
+    ],
+    Input('sbl-table', 'cellRendererData'),
+    State({'type': 'edit-input', 'key': ALL}, 'id'),
+)
+def populate_edit_modal(cell_renderer_data, all_ids):
+    if not cell_renderer_data:
+        raise PreventUpdate
+
+    # Extract the action and row ID from the cellRendererData
+    action = cell_renderer_data.get('value', {}).get('action')
+    row_id = cell_renderer_data.get('value', {}).get('rowId')
+
+    if action == 'edit':
+        # Query the database for the current data using the row_id
+        conn = sqlite3.connect('test_database.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM sbl_table WHERE id = ?', (row_id,))
+        row = cursor.fetchone()
+        conn.close()
+
+        if not row:
+            raise PreventUpdate
+
+        # Generate the title for the modal with the ID
+        title = f"Edit SBA Record {row_id}"
+
+        # Map the database fields to your input fields in the modal
+        data_mapping = {
+            'edit-sba-type': row[1],  # assuming sba_type is the 2nd column in your table
+            'edit-status': row[2],
+            'edit-sba-date': row[3],
+            'edit-eval-date': row[4],
+            'edit-product': row[5],
+            'edit-bin': row[6],
+            'edit-bin-group': row[7],
+            'edit-pgm-process': row[8],
+            'edit-sba-qty': row[9],
+            'edit-sba-avg': row[10],
+            'edit-hit-rate': row[11],
+            'edit-sba-limit': row[12],
+            'edit-assigned-team': row[13],
+            'edit-action-owner': row[14],
+            'edit-ya-rep': row[15],
+            'edit-pe-owner': row[16],
+            'edit-follow-up': row[17],
+            'edit-fit-link': row[18],
+            'edit-fit-status': row[19],
+            'edit-root-cause': row[20],
+            'edit-action-item': row[21],
+            'edit-comment': row[22],
+        }
+
+        # Return the values for each input in the modal
+        return [data_mapping.get(comp_id['key'], '') for comp_id in all_ids], title, True
+
+    raise PreventUpdate
+
+
+@app.callback(
+    Output('modal-edit-sbl', 'visible'),
+    Input('modal-edit-sbl', 'okCounts'),
+    State('modal-edit-sbl', 'title'),
+    State({'type': 'edit-input', 'key': ALL}, 'value'),
+    State({'type': 'edit-input', 'key': ALL}, 'id'),
+)
+def update_sbl_record(okClicks, modal_title, input_values, input_ids):
+    if not okClicks:
+        raise PreventUpdate
+
+    # Extract the ID from the modal title
+    row_id = modal_title.split()[-1]  # Assuming the title is 'Edit SBA Record <ID>'
+
+    # Map the input values back to their respective fields
+    update_data = {comp_id['key']: value for comp_id, value in zip(input_ids, input_values)}
+
+    # Update the database record
+    conn = sqlite3.connect('test_database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE sbl_table
+        SET sba_type = ?, status = ?, sba_date = ?, eval_date = ?, product = ?, bin = ?, bin_group = ?, pgm_process = ?, 
+            sba_qty = ?, sba_avg = ?, hit_rate = ?, sba_limit = ?, assigned_team = ?, action_owner = ?, ya_rep = ?, 
+            pe_owner = ?, follow_up = ?, fit_link = ?, fit_status = ?, root_cause = ?, action_item = ?, comment = ?
+        WHERE id = ?
+    ''', (
+        update_data['edit-sba-type'], update_data['edit-status'], update_data['edit-sba-date'], update_data['edit-eval-date'], 
+        update_data['edit-product'], update_data['edit-bin'], update_data['edit-bin-group'], update_data['edit-pgm-process'], 
+        update_data['edit-sba-qty'], update_data['edit-sba-avg'], update_data['edit-hit-rate'], update_data['edit-sba-limit'], 
+        update_data['edit-assigned-team'], update_data['edit-action-owner'], update_data['edit-ya-rep'], update_data['edit-pe-owner'], 
+        update_data['edit-follow-up'], update_data['edit-fit-link'], update_data['edit-fit-status'], update_data['edit-root-cause'], 
+        update_data['edit-action-item'], update_data['edit-comment'], row_id
+    ))
+    conn.commit()
+    conn.close()
+
+    return False  # Close the modal after updating
+
+
