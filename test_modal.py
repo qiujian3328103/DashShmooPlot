@@ -525,3 +525,40 @@ def update_sbl_record(okClicks, modal_title, input_values, input_ids):
     return False  # Close the modal after updating
 
 
+
+import sqlite3
+
+def update_sbl_record_in_db(row_id, update_data):
+    """
+    Updates an SBL record in the database based on the provided row ID and data.
+
+    Args:
+        row_id (int): The ID of the record to be updated.
+        update_data (dict): A dictionary containing the updated field values.
+
+    Returns:
+        None
+    """
+    # Update the database record
+    conn = sqlite3.connect('test_database.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        UPDATE sbl_table
+        SET sba_type = ?, status = ?, sba_date = ?, eval_date = ?, product = ?, bin = ?, bin_group = ?, pgm_process = ?, 
+            sba_qty = ?, sba_avg = ?, hit_rate = ?, sba_limit = ?, assigned_team = ?, action_owner = ?, ya_rep = ?, 
+            pe_owner = ?, follow_up = ?, fit_link = ?, fit_status = ?, root_cause = ?, action_item = ?, comment = ?
+        WHERE id = ?
+    ''', (
+        update_data['edit-sba-type'], update_data['edit-status'], update_data['edit-sba-date'], update_data['edit-eval-date'], 
+        update_data['edit-product'], update_data['edit-bin'], update_data['edit-bin-group'], update_data['edit-pgm-process'], 
+        update_data['edit-sba-qty'], update_data['edit-sba-avg'], update_data['edit-hit-rate'], update_data['edit-sba-limit'], 
+        update_data['edit-assigned-team'], update_data['edit-action-owner'], update_data['edit-ya-rep'], update_data['edit-pe-owner'], 
+        update_data['edit-follow-up'], update_data['edit-fit-link'], update_data['edit-fit-status'], update_data['edit-root-cause'], 
+        update_data['edit-action-item'], update_data['edit-comment'], row_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+
