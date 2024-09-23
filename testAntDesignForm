@@ -371,3 +371,27 @@ def create_comment_history_page(row_id=48):
             ], span=16)
         ], gutter=10,), 
     ])
+
+
+
+fac.AntdSpace([
+    fac.AntdComment(
+        authorName=f"{item['user']}",
+        publishTime={
+            'value': f"{item['time_value']}",
+            'format': 'YYYY-MM-DD hh:mm:ss',
+        },
+        commentContent=html.Div([
+            html.P(item['comment']),  # The comment text
+            item['image_group']  # The image group associated with the comment
+        ]),
+        locale='en-us',
+        showLikeDislike=False,
+        showReply=False,
+        avatarProps={
+            'mode': 'text',
+            'text': item['avatar_text'],
+            'style': {'background': item['avatar_color']},
+        },
+    ) for item in comments_items
+], direction='vertical', style={'width': '100%'})
