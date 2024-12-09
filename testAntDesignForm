@@ -71,3 +71,41 @@ const toolbar = createToolbar({{
             defaultContent=defaultContent
         )
     )
+
+
+
+
+                                    # 用于渲染富文本编辑器
+                                    html.Div(
+                                        [
+                                            html.Div(
+                                                id='toolbar-container',
+                                                style={
+                                                    'borderBottom': '1px solid #ccc'
+                                                }
+                                            ),
+                                            html.Div(
+                                                id='editor-container',
+                                                style={
+                                                    'height': 600
+                                                }
+                                            ),
+                                            fuc.FefferyExecuteJs(
+                                                jsString=editor.create_editor(
+                                                    container_id='editor-container',
+                                                    toolbar_container_id='toolbar-container',
+                                                    store_id='written-content',
+                                                    defaultContent=match_note[0]['note_content']
+                                                )
+                                            ),
+                                            # 监听富文本编辑器内容并取回
+                                            fuc.FefferySessionStorage(
+                                                id='written-content'
+                                            )
+                                        ],
+                                        id='editor-wrapper',
+                                        style={
+                                            'border': '1px solid #ccc',
+                                            'marginBottom': 15
+                                        }
+                                    )
