@@ -138,3 +138,75 @@ app.layout = html.Div(
 if __name__ == "__main__":
     app.run(debug=True)
 
+
+
+var chartDom = document.getElementById('spc-chart');
+var myChart = echarts.init(chartDom);
+
+var option = {
+    title: {
+        text: 'Statistical Process Control Chart',
+        left: 'center'
+    },
+    tooltip: {
+        trigger: 'axis'
+    },
+    xAxis: {
+        type: 'category',
+        data: ['Jan-1', 'Jan-8', 'Jan-15', 'Jan-22', 'Jan-29', 'Feb-5', 'Feb-12', 'Feb-19', 'Feb-26', 'Mar-4', 'Mar-11', 'Mar-18', 'Mar-25']
+    },
+    yAxis: {
+        type: 'value'
+    },
+    grid: {
+        top: '15%',
+        bottom: '15%',
+        left: '10%',
+        right: '10%'
+    },
+    series: [
+        {
+            name: 'Data Points',
+            type: 'line',
+            data: [12, 15, 10, 5, 18, 21, 14, 13, 22, 15, 12, 9, 10],
+            markLine: {
+                silent: true,
+                data: [
+                    { yAxis: 21.22 }, // Upper Specification Limit
+                    { yAxis: 18.56 }, // Upper Control Limit
+                    { yAxis: 13.26 }, // Mean
+                    { yAxis: 10.61 }, // Lower Control Limit
+                    { yAxis: 5.31 }   // Lower Specification Limit
+                ],
+                lineStyle: {
+                    color: '#ccc',
+                    type: 'dashed'
+                }
+            },
+            markPoint: {
+                data: [
+                    { type: 'max', name: 'Max', itemStyle: { color: 'red' } },
+                    { type: 'min', name: 'Min', itemStyle: { color: 'purple' } }
+                ]
+            },
+            lineStyle: {
+                width: 2
+            },
+            itemStyle: {
+                color: function(params) {
+                    // Add color logic for different zones
+                    var value = params.value;
+                    if (value > 18.56 || value < 10.61) {
+                        return 'red'; // Out of control
+                    } else if (value > 13.26) {
+                        return 'green'; // Above average
+                    } else {
+                        return 'blue'; // Below average
+                    }
+                }
+            }
+        }
+    ]
+};
+
+myChart.setOption(option);
