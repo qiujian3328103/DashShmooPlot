@@ -94,6 +94,12 @@ def compute_correlations(df, x_col='X'):
         
     return pd.DataFrame(results)
 
+    _num = re.compile(r'^\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)', re.VERBOSE)
+    def clean_and_convert(val):
+        m = _num.match(str(val))
+        return float(m.group(1)) if m else float('nan')
+
+
 # Example usage:
 if __name__ == '__main__':
     # Create some example data.
