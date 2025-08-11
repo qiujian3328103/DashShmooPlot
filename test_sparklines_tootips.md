@@ -120,3 +120,106 @@ if __name__ == '__main__':
     
     print(sorted_results)
 ```
+
+```python
+def create_compose_map_figure(
+    bin_df, bin_group_list, group_by, bin_coord_df, colorscale='Viridis'
+):
+    if bin_df.empty:
+        return go.Figure()
+
+    # mark rows that belong to the selected bin groups
+    bin_df = bin_df.copy()
+    bin_df['bin_group_count'] = bin_df['bin_group'].isin(bin_group_list).astype(int)
+
+    # aggregate counts per (x, y, group)
+    grouped = (bin_df.groupby(['chip_x_pos', 'chip_y_pos', group_by])
+                      .agg(counts=('bin_group_count', 'sum'))
+                      .reset_index())
+
+    # ensure integer grid indices
+    for c in ['chip_x_pos', 'chip_y_pos']:
+        grouped[c] = grouped[c].astype(int)
+        bin_coord_df[c] = bin_coord_df[c].astype(int)
+
+    # list groups; sort if you want reproducible order
+    unique_groups = sorted(grouped[group_by].unique().tolist())
+    n = len(unique_groups)
+
+    # --- dynamic grid: near-square layout ---
+    cols = math.ceil(math.sqrt(n))
+    rows = math.ceil(n / cols)
+
+    fig = make_subplots(rows=rows, cols=cols, subplot_titles=unique_groups)
+
+    # compute global color range for a shared colorbar
+    # (use 5–95% quantiles; fall back to min/max if identical)
+    q5, q95 = grouped['counts'].quantile([0.05, 0.95])
+    if q5 == q95:
+        cmin, cmax = grouped['counts'].min(), grouped['counts'].max()
+        if cmin == cmax:  # all zeros?
+            cmin, cmax = 0, max(1, cmax)
+    else:
+        cmin, cmax = float(q5), float(q95)
+
+    # shared coloraxis => single colorbar
+    fig.update_layout(
+        coloraxis=dict(
+            colorscale=colorscale,
+            cmin=cmin,
+            cmax=cmax,
+            colorbar=dict(title='Counts', tickfont=dict(size=10), thickness=14)
+        ),
+        margin=dict(l=20, r=20, t=40, b=10),
+        showlegend=False
+    )
+
+    # draw one heatmap per group
+    for i, g in enumerate(unique_groups):
+        r = i // cols + 1
+        c = i % cols + 1
+
+        # left join to ensure full wafer grid, then pivot to 2D
+        f = bin_coord_df.merge(
+            grouped[grouped[group_by] == g],
+            how='left',
+            on=['chip_x_pos', 'chip_y_pos']
+        ).fillna({'counts': 0})
+
+        ztbl = f.pivot_table(
+            index='chip_y_pos', columns='chip_x_pos', values='counts', fill_value=0
+        )
+        x_vals = list(ztbl.columns)
+        y_vals = list(ztbl.index)
+        z_vals = ztbl.values
+
+        # 2D hovertext matching z’s shape
+        hovertext = [
+            [
+                f"x: {x} | y: {y}<br>Counts: {z:.0f}"
+                for x, z in zip(x_vals, z_row)
+            ]
+            for y, z_row in zip(y_vals, z_vals)
+        ]
+
+        fig.add_trace(
+            go.Heatmap(
+                z=z_vals,
+                x=x_vals,
+                y=y_vals,
+                xgap=1, ygap=1,
+                coloraxis="coloraxis",   # <-- shared colorbar
+                hoverinfo='text',
+                text=hovertext,
+                hovertemplate="%{text}<extra></extra>",
+            ),
+            row=r, col=c
+        )
+
+        # tidy axes for each subplot
+        fig.update_xaxes(title_text="X", tickfont=dict(size=9), row=r, col=c)
+        fig.update_yaxes(title_text="Y", tickfont=dict(size=9), row=r, col=c, scaleanchor=None)
+
+    # keep each cell square-ish per subplot
+    # (global equal aspect is tricky across subplots; this keeps ticks readable)
+    return fig
