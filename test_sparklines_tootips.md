@@ -223,3 +223,116 @@ def create_compose_map_figure(
     # keep each cell square-ish per subplot
     # (global equal aspect is tricky across subplots; this keeps ticks readable)
     return fig
+
+```python
+    def fetch_with_images(
+        cls,
+        start_date: str,
+        end_date: str,
+        sba_days=None,
+        alert_level=None,
+        product=None,
+        sba_type=None,
+    ) -> pd.DataFrame:
+        """
+        Query SBA rows within [start_date, end_date] (inclusive), optionally filtered by
+        sba_days / alert_level / product / sba_type. Join latest images by foreign_key
+        from MapImage, TrendImage, RootCauseImage, and return a pandas DataFrame.
+
+        Parameters
+        ----------
+        start_date : str
+            Inclusive lower bound, 'YYYY-mm-dd'.
+        end_date : str
+            Inclusive upper bound, 'YYYY-mm-dd'.
+        sba_days, alert_level, product, sba_type : str | list[str] | None
+            Optional filters; pass a single value or a list of values.
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+
+        # --- Parse dates (inclusive day range) ---
+        s_dt = dt.datetime.strptime(start_date, "%Y-%m-%d")
+        e_dt = dt.datetime.strptime(end_date, "%Y-%m-%d") + dt.timedelta(days=1) - dt.timedelta(seconds=1)
+
+        def _as_list(v):
+            if v is None:
+                return None
+            if isinstance(v, (list, tuple, set)):
+                return list(v)
+            return [v]
+
+        # --- Dynamic filters ---
+        wheres = [
+            cls.sba_date.is_null(False),
+            cls.sba_date.between(s_dt, e_dt),
+        ]
+
+        vals = _as_list(sba_days)
+        if vals:
+            wheres.append(cls.sba_days.in_(vals) if len(vals) > 1 else (cls.sba_days == vals[0]))
+
+        vals = _as_list(alert_level)
+        if vals:
+            wheres.append(cls.alert_level.in_(vals) if len(vals) > 1 else (cls.alert_level == vals[0]))
+
+        vals = _as_list(product)
+        if vals:
+            wheres.append(cls.product.in_(vals) if len(vals) > 1 else (cls.product == vals[0]))
+
+        vals = _as_list(sba_type)
+        if vals:
+            wheres.append(cls.sba_type.in_(vals) if len(vals) > 1 else (cls.sba_type == vals[0]))
+
+        # --- Subqueries to get latest image id per foreign_key (by max id) ---
+        # If you later add a timestamp column (e.g., created_at), replace fn.MAX(MapImage.id)
+        # with fn.MAX(MapImage.created_at) and join on that instead.
+        latest_map = (MapImage
+                      .select(MapImage.foreign_key, fn.MAX(MapImage.id).alias('max_id'))
+                      .group_by(MapImage.foreign_key)
+                      .alias('latest_map'))
+
+        latest_trend = (TrendImage
+                        .select(TrendImage.foreign_key, fn.MAX(TrendImage.id).alias('max_id'))
+                        .group_by(TrendImage.foreign_key)
+                        .alias('latest_trend'))
+
+        latest_root = (RootCauseImage
+                       .select(RootCauseImage.foreign_key, fn.MAX(RootCauseImage.id).alias('max_id'))
+                       .group_by(RootCauseImage.foreign_key)
+                       .alias('latest_root'))
+
+        # --- Build query with LEFT JOINs to subqueries, then to the actual rows ---
+        q = (cls
+             .select(
+                 cls.id, cls.sba_type, cls.sba_date, cls.product, cls.alert_level,
+                 cls.sba_days, cls.foreign_key,
+                 MapImage.map_image.alias('map_image'),
+                 TrendImage.trend_image.alias('trend_image'),
+                 RootCauseImage.root_cause_image.alias('root_cause_image'),
+             )
+             # MapImage join
+             .join(latest_map, JOIN.LEFT_OUTER, on=(cls.foreign_key == latest_map.c.foreign_key))
+             .join(MapImage, JOIN.LEFT_OUTER, on=(MapImage.id == latest_map.c.max_id))
+             .switch(cls)
+             # TrendImage join
+             .join(latest_trend, JOIN.LEFT_OUTER, on=(cls.foreign_key == latest_trend.c.foreign_key))
+             .join(TrendImage, JOIN.LEFT_OUTER, on=(TrendImage.id == latest_trend.c.max_id))
+             .switch(cls)
+             # RootCauseImage join
+             .join(latest_root, JOIN.LEFT_OUTER, on=(cls.foreign_key == latest_root.c.foreign_key))
+             .join(RootCauseImage, JOIN.LEFT_OUTER, on=(RootCauseImage.id == latest_root.c.max_id))
+             .where(*wheres)
+             .order_by(cls.sba_date.desc(), cls.id.desc())
+        )
+
+        rows = list(q.dicts())
+        # Ensure consistent columns if no rows
+        if not rows:
+            return pd.DataFrame(columns=[
+                'id', 'sba_type', 'sba_date', 'product', 'alert_level', 'sba_days',
+                'foreign_key', 'map_image', 'trend_image', 'root_cause_image'
+            ])
+        return pd.DataFrame(rows)
