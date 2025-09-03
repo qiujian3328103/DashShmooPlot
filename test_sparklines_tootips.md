@@ -336,3 +336,1032 @@ def create_compose_map_figure(
                 'foreign_key', 'map_image', 'trend_image', 'root_cause_image'
             ])
         return pd.DataFrame(rows)
+
+
+```XML
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>INK File Converter</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_5">
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QPushButton" name="pushButton_open_folder">
+              <property name="text">
+               <string>Open Folder</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLineEdit" name="lineEdit_save_file_path">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(255, 255, 255);</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_save_file_path">
+              <property name="text">
+               <string>Save Path</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>GOOD DIE: -----&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_good_die_output">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(255, 255, 255);</string>
+              </property>
+              <property name="text">
+               <string>1</string>
+              </property>
+              <property name="placeholderText">
+               <string>Map value</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>FAILE DIE: -----&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_fail_die_output">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(255, 255, 255);</string>
+              </property>
+              <property name="text">
+               <string>X</string>
+              </property>
+              <property name="placeholderText">
+               <string>Map value</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <item>
+             <widget class="QLabel" name="label_11">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Emty Space: ----&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_empty_output">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(255, 255, 255);</string>
+              </property>
+              <property name="text">
+               <string>.</string>
+              </property>
+              <property name="placeholderText">
+               <string>Map value</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <item>
+             <widget class="QLabel" name="label_12">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Good Die List: </string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_good_die_list">
+              <property name="toolTip">
+               <string>use ',' to split</string>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(255, 255, 255);</string>
+              </property>
+              <property name="text">
+               <string>0001</string>
+              </property>
+              <property name="placeholderText">
+               <string>Map value</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Input File List</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QListWidget" name="listWidget_file_list">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QPushButton" name="pushButton_convert_file">
+               <property name="text">
+                <string>Convert File</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Preview</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QTextEdit" name="textEdit_preview"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Setting</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Lot ID:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_extract_root_lot_id">
+               <property name="toolTip">
+                <string>Extract Root Lot ID uncheck will extract lot id</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string>Extract Root Lot ID         </string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Wafer ID:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_extract_wafer_id">
+               <property name="toolTip">
+                <string>Extract Root Lot ID uncheck will extract lot id</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string>Remove 'W' on WaferID</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <item>
+              <widget class="QLabel" name="label_5">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Lot Wafer Location:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_lot_wafer_location">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <widget class="QLabel" name="label_6">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Part ID Location:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_part_id_location">
+               <property name="toolTip">
+                <string>row number where the part id located</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="value">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="QLabel" name="label_7">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>FLAT:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spinBox_flat">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>X Coordinate Keyword:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_x_coord_keyword">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string>X=</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <item>
+              <widget class="QLabel" name="label_9">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Y Coordinate Keyword:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_y_coord_keyword">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string>Y=</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <item>
+              <widget class="QLabel" name="label_10">
+               <property name="minimumSize">
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Bin Keyword:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEdit_bin_keyword">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="text">
+                <string>B=</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>178</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>900</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+
+
+```python
+# Form implementation generated from reading ui file 'MainWindow.ui'
+#
+# Created by: PyQt6 UI code generator 6.4.2
+#
+# WARNING: Any manual changes made to this file will be lost when pyuic6 is
+# run again.  Do not edit this file unless you know what you are doing.
+
+
+from PySide6 import QtCore, QtGui, QtWidgets
+
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(900, 600)
+        MainWindow.setMinimumSize(QtCore.QSize(0, 0))
+        MainWindow.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.splitter = QtWidgets.QSplitter(parent=self.centralwidget)
+        self.splitter.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.splitter.setObjectName("splitter")
+        self.groupBox_2 = QtWidgets.QGroupBox(parent=self.splitter)
+        self.groupBox_2.setMaximumSize(QtCore.QSize(300, 16777215))
+        self.groupBox_2.setTitle("")
+        self.groupBox_2.setObjectName("groupBox_2")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.groupBox_2)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.pushButton_open_folder = QtWidgets.QPushButton(parent=self.groupBox_2)
+        self.pushButton_open_folder.setObjectName("pushButton_open_folder")
+        self.horizontalLayout.addWidget(self.pushButton_open_folder)
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.lineEdit_save_file_path = QtWidgets.QLineEdit(parent=self.groupBox_2)
+        self.lineEdit_save_file_path.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_save_file_path.setObjectName("lineEdit_save_file_path")
+        self.horizontalLayout_4.addWidget(self.lineEdit_save_file_path)
+        self.pushButton_save_file_path = QtWidgets.QPushButton(parent=self.groupBox_2)
+        self.pushButton_save_file_path.setObjectName("pushButton_save_file_path")
+        self.horizontalLayout_4.addWidget(self.pushButton_save_file_path)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label = QtWidgets.QLabel(parent=self.groupBox_2)
+        self.label.setMinimumSize(QtCore.QSize(100, 0))
+        self.label.setObjectName("label")
+        self.horizontalLayout_2.addWidget(self.label)
+        self.lineEdit_good_die_output = QtWidgets.QLineEdit(parent=self.groupBox_2)
+        self.lineEdit_good_die_output.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_good_die_output.setObjectName("lineEdit_good_die_output")
+        self.horizontalLayout_2.addWidget(self.lineEdit_good_die_output)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_2 = QtWidgets.QLabel(parent=self.groupBox_2)
+        self.label_2.setMinimumSize(QtCore.QSize(100, 0))
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout_3.addWidget(self.label_2)
+        self.lineEdit_fail_die_output = QtWidgets.QLineEdit(parent=self.groupBox_2)
+        self.lineEdit_fail_die_output.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_fail_die_output.setObjectName("lineEdit_fail_die_output")
+        self.horizontalLayout_3.addWidget(self.lineEdit_fail_die_output)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_13 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_13.setObjectName("horizontalLayout_13")
+        self.label_11 = QtWidgets.QLabel(parent=self.groupBox_2)
+        self.label_11.setMinimumSize(QtCore.QSize(100, 0))
+        self.label_11.setObjectName("label_11")
+        self.horizontalLayout_13.addWidget(self.label_11)
+        self.lineEdit_empty_output = QtWidgets.QLineEdit(parent=self.groupBox_2)
+        self.lineEdit_empty_output.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_empty_output.setObjectName("lineEdit_empty_output")
+        self.horizontalLayout_13.addWidget(self.lineEdit_empty_output)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_13)
+        self.horizontalLayout_14 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
+        self.label_12 = QtWidgets.QLabel(parent=self.groupBox_2)
+        self.label_12.setMinimumSize(QtCore.QSize(100, 0))
+        self.label_12.setObjectName("label_12")
+        self.horizontalLayout_14.addWidget(self.label_12)
+        self.lineEdit_good_die_list = QtWidgets.QLineEdit(parent=self.groupBox_2)
+        self.lineEdit_good_die_list.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_good_die_list.setObjectName("lineEdit_good_die_list")
+        self.horizontalLayout_14.addWidget(self.lineEdit_good_die_list)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_14)
+        self.groupBox = QtWidgets.QGroupBox(parent=self.groupBox_2)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout = QtWidgets.QGridLayout(self.groupBox)
+        self.gridLayout.setObjectName("gridLayout")
+        self.listWidget_file_list = QtWidgets.QListWidget(parent=self.groupBox)
+        self.listWidget_file_list.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.listWidget_file_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+        self.listWidget_file_list.setObjectName("listWidget_file_list")
+        self.gridLayout.addWidget(self.listWidget_file_list, 0, 0, 1, 1)
+        self.pushButton_convert_file = QtWidgets.QPushButton(parent=self.groupBox)
+        self.pushButton_convert_file.setObjectName("pushButton_convert_file")
+        self.gridLayout.addWidget(self.pushButton_convert_file, 1, 0, 1, 1)
+        self.verticalLayout_2.addWidget(self.groupBox)
+        self.gridLayout_4.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
+        self.tabWidget = QtWidgets.QTabWidget(parent=self.splitter)
+        self.tabWidget.setObjectName("tabWidget")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.tab)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.textEdit_preview = QtWidgets.QTextEdit(parent=self.tab)
+        self.textEdit_preview.setObjectName("textEdit_preview")
+        self.gridLayout_2.addWidget(self.textEdit_preview, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab, "")
+        self.tab_2 = QtWidgets.QWidget()
+        self.tab_2.setObjectName("tab_2")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.tab_2)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_3 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_3.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_3.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_6.addWidget(self.label_3)
+        self.checkBox_extract_root_lot_id = QtWidgets.QCheckBox(parent=self.tab_2)
+        self.checkBox_extract_root_lot_id.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.checkBox_extract_root_lot_id.setChecked(True)
+        self.checkBox_extract_root_lot_id.setObjectName("checkBox_extract_root_lot_id")
+        self.horizontalLayout_6.addWidget(self.checkBox_extract_root_lot_id)
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label_4 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_4.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_4.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_4.setObjectName("label_4")
+        self.horizontalLayout_5.addWidget(self.label_4)
+        self.checkBox_extract_wafer_id = QtWidgets.QCheckBox(parent=self.tab_2)
+        self.checkBox_extract_wafer_id.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.checkBox_extract_wafer_id.setChecked(True)
+        self.checkBox_extract_wafer_id.setObjectName("checkBox_extract_wafer_id")
+        self.horizontalLayout_5.addWidget(self.checkBox_extract_wafer_id)
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.label_5 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_5.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_5.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_5.setObjectName("label_5")
+        self.horizontalLayout_7.addWidget(self.label_5)
+        self.spinBox_lot_wafer_location = QtWidgets.QSpinBox(parent=self.tab_2)
+        self.spinBox_lot_wafer_location.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.spinBox_lot_wafer_location.setObjectName("spinBox_lot_wafer_location")
+        self.horizontalLayout_7.addWidget(self.spinBox_lot_wafer_location)
+        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.label_6 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_6.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_6.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_6.setObjectName("label_6")
+        self.horizontalLayout_8.addWidget(self.label_6)
+        self.spinBox_part_id_location = QtWidgets.QSpinBox(parent=self.tab_2)
+        self.spinBox_part_id_location.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.spinBox_part_id_location.setProperty("value", 2)
+        self.spinBox_part_id_location.setObjectName("spinBox_part_id_location")
+        self.horizontalLayout_8.addWidget(self.spinBox_part_id_location)
+        self.verticalLayout.addLayout(self.horizontalLayout_8)
+        self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_9.setObjectName("horizontalLayout_9")
+        self.label_7 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_7.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_7.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_7.setObjectName("label_7")
+        self.horizontalLayout_9.addWidget(self.label_7)
+        self.spinBox_flat = QtWidgets.QSpinBox(parent=self.tab_2)
+        self.spinBox_flat.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.spinBox_flat.setObjectName("spinBox_flat")
+        self.horizontalLayout_9.addWidget(self.spinBox_flat)
+        self.verticalLayout.addLayout(self.horizontalLayout_9)
+        self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_10.setObjectName("horizontalLayout_10")
+        self.label_8 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_8.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_8.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_8.setObjectName("label_8")
+        self.horizontalLayout_10.addWidget(self.label_8)
+        self.lineEdit_x_coord_keyword = QtWidgets.QLineEdit(parent=self.tab_2)
+        self.lineEdit_x_coord_keyword.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_x_coord_keyword.setObjectName("lineEdit_x_coord_keyword")
+        self.horizontalLayout_10.addWidget(self.lineEdit_x_coord_keyword)
+        self.verticalLayout.addLayout(self.horizontalLayout_10)
+        self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        self.label_9 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_9.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_9.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_9.setObjectName("label_9")
+        self.horizontalLayout_11.addWidget(self.label_9)
+        self.lineEdit_y_coord_keyword = QtWidgets.QLineEdit(parent=self.tab_2)
+        self.lineEdit_y_coord_keyword.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_y_coord_keyword.setObjectName("lineEdit_y_coord_keyword")
+        self.horizontalLayout_11.addWidget(self.lineEdit_y_coord_keyword)
+        self.verticalLayout.addLayout(self.horizontalLayout_11)
+        self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
+        self.label_10 = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_10.setMinimumSize(QtCore.QSize(150, 0))
+        self.label_10.setMaximumSize(QtCore.QSize(150, 16777215))
+        self.label_10.setObjectName("label_10")
+        self.horizontalLayout_12.addWidget(self.label_10)
+        self.lineEdit_bin_keyword = QtWidgets.QLineEdit(parent=self.tab_2)
+        self.lineEdit_bin_keyword.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.lineEdit_bin_keyword.setObjectName("lineEdit_bin_keyword")
+        self.horizontalLayout_12.addWidget(self.lineEdit_bin_keyword)
+        self.verticalLayout.addLayout(self.horizontalLayout_12)
+        spacerItem = QtWidgets.QSpacerItem(20, 178, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
+        self.gridLayout_3.addLayout(self.verticalLayout, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_2, "")
+        self.gridLayout_5.addWidget(self.splitter, 0, 0, 1, 1)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 900, 22))
+        self.menubar.setObjectName("menubar")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        self.tabWidget.setCurrentIndex(1)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "INK File Converter"))
+        self.pushButton_open_folder.setText(_translate("MainWindow", "Open Folder"))
+        self.pushButton_save_file_path.setText(_translate("MainWindow", "Save Path"))
+        self.label.setText(_translate("MainWindow", "GOOD DIE: ----->"))
+        self.lineEdit_good_die_output.setText(_translate("MainWindow", "1"))
+        self.lineEdit_good_die_output.setPlaceholderText(_translate("MainWindow", "Map value"))
+        self.label_2.setText(_translate("MainWindow", "FAILE DIE: ----->"))
+        self.lineEdit_fail_die_output.setText(_translate("MainWindow", "X"))
+        self.lineEdit_fail_die_output.setPlaceholderText(_translate("MainWindow", "Map value"))
+        self.label_11.setText(_translate("MainWindow", "Emty Space: ---->"))
+        self.lineEdit_empty_output.setText(_translate("MainWindow", "."))
+        self.lineEdit_empty_output.setPlaceholderText(_translate("MainWindow", "Map value"))
+        self.label_12.setText(_translate("MainWindow", "Good Die List: "))
+        self.lineEdit_good_die_list.setToolTip(_translate("MainWindow", "use \',\' to split"))
+        self.lineEdit_good_die_list.setText(_translate("MainWindow", "0001"))
+        self.lineEdit_good_die_list.setPlaceholderText(_translate("MainWindow", "Map value"))
+        self.groupBox.setTitle(_translate("MainWindow", "Input File List"))
+        self.pushButton_convert_file.setText(_translate("MainWindow", "Convert File"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Preview"))
+        self.label_3.setText(_translate("MainWindow", "Lot ID:"))
+        self.checkBox_extract_root_lot_id.setToolTip(_translate("MainWindow", "Extract Root Lot ID uncheck will extract lot id"))
+        self.checkBox_extract_root_lot_id.setText(_translate("MainWindow", "Extract Root Lot ID         "))
+        self.label_4.setText(_translate("MainWindow", "Wafer ID:"))
+        self.checkBox_extract_wafer_id.setToolTip(_translate("MainWindow", "Extract Root Lot ID uncheck will extract lot id"))
+        self.checkBox_extract_wafer_id.setText(_translate("MainWindow", "Remove \'W\' on WaferID"))
+        self.label_5.setText(_translate("MainWindow", "Lot Wafer Location:"))
+        self.label_6.setText(_translate("MainWindow", "Part ID Location:"))
+        self.spinBox_part_id_location.setToolTip(_translate("MainWindow", "row number where the part id located"))
+        self.label_7.setText(_translate("MainWindow", "FLAT:"))
+        self.label_8.setText(_translate("MainWindow", "X Coordinate Keyword:"))
+        self.lineEdit_x_coord_keyword.setText(_translate("MainWindow", "X="))
+        self.label_9.setText(_translate("MainWindow", "Y Coordinate Keyword:"))
+        self.lineEdit_y_coord_keyword.setText(_translate("MainWindow", "Y="))
+        self.label_10.setText(_translate("MainWindow", "Bin Keyword:"))
+        self.lineEdit_bin_keyword.setText(_translate("MainWindow", "B="))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Setting"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec())
+
+```python
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QStatusBar,
+    QDialog,
+    QLabel,
+    QPushButton,
+    QLineEdit,
+    QComboBox,
+    QVBoxLayout,
+    QGridLayout,
+    QDialogButtonBox,
+    QMessageBox,
+    QFileDialog,
+    QListWidgetItem
+)
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtCore import Qt, QCoreApplication, QPoint, QSize, QSettings
+# from qt_material import apply_stylesheet
+import qdarktheme
+import sys
+import pandas as pd 
+import numpy as np 
+import os
+
+from MainWindow import Ui_MainWindow
+
+class App(QMainWindow, Ui_MainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        # self.load_styles()
+        self.setup_connections()
+        self.save_file_path = ""
+        self.select_file_path_list = {}
+
+    # def load_styles(self):
+    #     """Load QSS style file"""
+    #     try:
+    #         # Get current file directory
+    #         current_dir = os.path.dirname(os.path.abspath(__file__))
+    #         style_file = os.path.join(current_dir, "styles.qss")
+            
+    #         if os.path.exists(style_file):
+    #             with open(style_file, 'r', encoding='utf-8') as f:
+    #                 style_sheet = f.read()
+    #             self.setStyleSheet(style_sheet)
+    #             print(f"Style file loaded successfully: {style_file}")
+    #         else:
+    #             print(f"Style file not found: {style_file}")
+    #     except Exception as e:
+    #         print(f"Error loading style file: {e}")
+
+    def setup_connections(self):
+        """Setup button connections and event handlers"""
+        # Connect Open Folder button to file dialog
+        self.pushButton_open_folder.clicked.connect(self.open_file_dialog)
+        
+        # Connect Save Path button to save dialog
+        self.pushButton_save_file_path.clicked.connect(self.open_save_dialog)
+        
+        # Connect Convert File button to conversion function
+        self.pushButton_convert_file.clicked.connect(self.convert_files)
+
+    def open_file_dialog(self):
+        """Open system file dialog to select multiple files"""
+        try:
+            options = QFileDialog.Options()
+            file_paths, _ = QFileDialog.getOpenFileNames(
+                self,
+                "Select Files",
+                "",  # Start from current directory
+                "All Files (*);;Text Files (*.txt);;CSV Files (*.csv);;Python Files (*.py);;Image Files (*.png *.jpg *.jpeg *.bmp *.gif);;PDF Files (*.pdf)",
+                options=options
+            )
+                
+            if file_paths:
+                print(f"Selected {len(file_paths)} files:")
+                for file_path in file_paths:
+                    print(f"  - {file_path}")
+                
+                # Store absolute file paths with filename as key
+                self.select_file_path_list = {os.path.basename(file_path): os.path.abspath(file_path) for file_path in file_paths}
+                
+                # Display files in listView widget
+                self.display_files_in_listview()
+                
+                # Show summary message
+                QMessageBox.information(
+                    self,
+                    "Files Selected",
+                    f"Successfully selected {len(file_paths)} files.\nFiles are now displayed in the list below."
+                )
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error opening file dialog: {str(e)}")
+
+
+    def display_files_in_listview(self):
+        """Display selected files in the listWidget widget"""
+        try:
+            # Clear the existing list
+            self.listWidget_file_list.clear()
+            
+            if not self.select_file_path_list:
+                return
+            
+            # Add each file to the listWidget
+            for filename, file_path in self.select_file_path_list.items():
+                # Create list item with just filename
+                item = QListWidgetItem(filename)
+                # Store full path as item data for later use
+                item.setData(Qt.UserRole, file_path)
+                
+                # Add to listWidget
+                self.listWidget_file_list.addItem(item)
+            
+            print(f"Displayed {len(self.select_file_path_list)} files in listWidget")
+            
+        except Exception as e:
+            print(f"Error displaying files in listWidget: {e}")
+            QMessageBox.critical(self, "Error", f"Error displaying files: {str(e)}")
+
+
+    def open_save_dialog(self):
+        """Open system file dialog to select save location"""
+        try:
+            # Open save file dialog
+            self.save_file_path = QFileDialog.getExistingDirectory(
+                self,
+                "Save File",
+            )
+            
+            if self.save_file_path:
+                print(f"Selected save path: {self.save_file_path}")
+                # Update the save path line edit if needed
+                self.lineEdit_save_file_path.setText(self.save_file_path)
+                
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error opening save dialog: {str(e)}")
+    
+    def convert_files(self):
+        """Convert selected files to the save location"""
+        try:
+            input_dict = {
+                "good_die_output": self.lineEdit_good_die_output.text(),
+                "fail_die_output": self.lineEdit_fail_die_output.text(),
+                "empty_output": self.lineEdit_empty_output.text(),
+                "good_die_list": self.lineEdit_good_die_list.text().split(","),
+                "extract_root_lot_id": self.checkBox_extract_root_lot_id.isChecked(),
+                "clean_wafer_id": self.checkBox_extract_wafer_id.isChecked(),
+                "lot_wafer_location": self.spinBox_lot_wafer_location.value(),
+                "part_id_location": self.spinBox_part_id_location.value(),
+                "flat": self.spinBox_flat.value(),
+                "x_coord_keyword": self.lineEdit_x_coord_keyword.text(),
+                "y_coord_keyword": self.lineEdit_y_coord_keyword.text(),
+                "bin_keyword": self.lineEdit_bin_keyword.text(),
+            }
+            print(input_dict)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error converting files: {str(e)}")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    # qdarktheme.setup_theme("light", corner_shape="sharp")
+    window = App()
+    # apply_stylesheet(app, theme="light_lightgreen.xml")
+    window.show()
+    sys.exit(app.exec())
+
+
+
+
+
