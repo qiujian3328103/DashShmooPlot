@@ -1123,8 +1123,11 @@ class Ui_MainWindow(object):
         self.lineEdit_bin_keyword.setObjectName("lineEdit_bin_keyword")
         self.horizontalLayout_12.addWidget(self.lineEdit_bin_keyword)
         self.verticalLayout.addLayout(self.horizontalLayout_12)
-        spacerItem = QtWidgets.QSpacerItem(20, 178, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
+        self.label_show_image = QtWidgets.QLabel(parent=self.tab_2)
+        self.label_show_image.setMinimumSize(QtCore.QSize(0, 200))
+        self.label_show_image.setText("")
+        self.label_show_image.setObjectName("label_show_image")
+        self.verticalLayout.addWidget(self.label_show_image)
         self.gridLayout_3.addLayout(self.verticalLayout, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.gridLayout_5.addWidget(self.splitter, 0, 0, 1, 1)
@@ -1189,6 +1192,7 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec())
+
 
 ```python
 from PySide6.QtWidgets import (
