@@ -1546,4 +1546,101 @@ if __name__ == "__main__":
     print("Saved styled_table.pptx")
 
 
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
+
+def _to_rgb(color):
+    """Accept '#RRGGBB' or (r,g,b) and return an RGBColor."""
+    if color is None:
+        return None
+    if isinstance(color, tuple) and len(color) == 3:
+        r, g, b = color
+        return RGBColor(int(r), int(g), int(b))
+    if isinstance(color, str):
+        s = color.strip().lstrip("#")
+        if len(s) == 6:
+            return RGBColor(int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
+    raise ValueError("Color must be '#RRGGBB' or (r,g,b).")
+
+def add_rectangle(
+    slide,
+    text: str,
+    left,
+    top,
+    width,
+    height,
+    font_size=Pt(14),
+    font_color="#000000",
+    font_name="Arial",
+    background_color="#FFFFFF"
+):
+    """
+    Add a rectangle shape with styled text.
+
+    Args:
+        slide: Slide object to add the shape on.
+        text (str): Text to display in the rectangle.
+        left, top, width, height: Position & size (use Inches() or Pt()).
+        font_size: Font size (default 14pt).
+        font_color: Font color ('#RRGGBB' or (r,g,b)).
+        font_name: Font name (string).
+        background_color: Fill color ('#RRGGBB' or (r,g,b)).
+
+    Returns:
+        shape: The rectangle shape object.
+    """
+    # add rectangle shape
+    shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
+
+    # background color
+    bg_rgb = _to_rgb(background_color)
+    if bg_rgb:
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = bg_rgb
+
+    # remove default border line
+    shape.line.fill.background()
+
+    # text setup
+    text_frame = shape.text_frame
+    text_frame.clear()  # remove default empty paragraph
+    p = text_frame.paragraphs[0]
+    run = p.add_run()
+    run.text = text
+
+    # font style
+    run.font.size = font_size
+    run.font.name = font_name
+    fg_rgb = _to_rgb(font_color)
+    if fg_rgb:
+        run.font.color.rgb = fg_rgb
+
+    return shape
+
+# ------------------------------
+# Example usage
+# ------------------------------
+if __name__ == "__main__":
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank layout
+
+    add_rectangle(
+        slide,
+        text="Hello World",
+        left=Inches(1),
+        top=Inches(1),
+        width=Inches(3),
+        height=Inches(1),
+        font_size=Pt(18),
+        font_color="#FFFFFF",
+        font_name="Calibri",
+        background_color="#2E86DE"
+    )
+
+    prs.save("rectangle_example.pptx")
+    print("Saved rectangle_example.pptx")
+
+
 
