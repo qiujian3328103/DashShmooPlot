@@ -1366,6 +1366,184 @@ if __name__ == "__main__":
     sys.exit(app.exec())
 
 
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+from collections.abc import Mapping
+
+def _to_rgb(color):
+    """Accept '#RRGGBB' or (r,g,b) and return an RGBColor."""
+    if color is None:
+        return None
+    if isinstance(color, tuple) and len(color) == 3:
+        r, g, b = color
+        return RGBColor(int(r), int(g), int(b))
+    if isinstance(color, str):
+        s = color.strip().lstrip("#")
+        if len(s) == 6:
+            return RGBColor(int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
+    raise ValueError("Color must be '#RRGGBB' or (r,g,b).")
+
+def add_table_from_dict(
+    slide,
+    data: Mapping[str, list],
+    rows: int | None = None,
+    cols: int | None = None,
+    *,
+    # placement & sizing
+    left=Inches(1),
+    top=Inches(1),
+    width=Inches(8),
+    height=Inches(1.5),
+    col_widths: list | None = None,   # list of lengths (e.g., [Inches(2), Inches(1.5), ...])
+    row_height=None,                  # Pt or Inches; single value or list per row
+    # header & text
+    header=True,
+    font_size=Pt(12),
+    align=PP_ALIGN.CENTER,
+    # colors
+    header_fill="#E8EEF9",
+    body_fill="#FFFFFF",
+    header_font_color="#000000",
+    body_font_color="#000000",
+):
+    """
+    Add a table to a slide using dict {column_name: [values...]} with styling controls.
+    """
+    if not isinstance(data, Mapping) or not data:
+        raise ValueError("`data` must be a non-empty dict-like mapping.")
+
+    col_names = list(data.keys())
+    inferred_cols = len(col_names)
+    max_len = max(len(v) for v in data.values())
+
+    cols = inferred_cols if cols is None else cols
+    if cols < inferred_cols:
+        raise ValueError(f"cols={cols} smaller than number of data columns ({inferred_cols}).")
+
+    inferred_rows = max_len + (1 if header else 0)
+    rows = inferred_rows if rows is None else rows
+    if rows < (1 if header else 0):
+        raise ValueError("rows too small (must allow for header if header=True).")
+
+    # create table
+    shape = slide.shapes.add_table(rows, cols, left, top, width, height)
+    table = shape.table
+
+    # set column widths
+    if col_widths is not None:
+        if len(col_widths) != cols:
+            raise ValueError("Length of col_widths must equal number of columns.")
+        for j, w in enumerate(col_widths):
+            table.columns[j].width = w
+    else:
+        even = width / cols
+        for j in range(cols):
+            table.columns[j].width = even
+
+    # set row height(s)
+    if row_height is not None:
+        if isinstance(row_height, (list, tuple)):
+            if len(row_height) != rows:
+                raise ValueError("If row_height is a list, it must have one entry per row.")
+            for i, h in enumerate(row_height):
+                table.rows[i].height = h
+        else:
+            for i in range(rows):
+                table.rows[i].height = row_height
+
+    # colors
+    hdr_fill_rgb = _to_rgb(header_fill)
+    body_fill_rgb = _to_rgb(body_fill)
+    hdr_font_rgb = _to_rgb(header_font_color)
+    body_font_rgb = _to_rgb(body_font_color)
+
+    data_col_count = min(cols, inferred_cols)
+    start_row = 0
+
+    # header row
+    if header:
+        for j in range(data_col_count):
+            cell = table.cell(0, j)
+            cell.text = str(col_names[j])
+            # fill
+            if hdr_fill_rgb:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = hdr_fill_rgb
+            # align + font
+            tf = cell.text_frame
+            p = tf.paragraphs[0]
+            p.alignment = align
+            if p.runs:
+                for run in p.runs:
+                    run.font.size = font_size
+                    if hdr_font_rgb:
+                        run.font.color.rgb = hdr_font_rgb
+        start_row = 1
+
+    # body cells
+    body_rows_allowed = rows - start_row
+    for j in range(data_col_count):
+        col_vals = list(data[col_names[j]])
+        # pad/truncate
+        if len(col_vals) < body_rows_allowed:
+            col_vals += [""] * (body_rows_allowed - len(col_vals))
+        else:
+            col_vals = col_vals[:body_rows_allowed]
+
+        for i, val in enumerate(col_vals, start=start_row):
+            cell = table.cell(i, j)
+            cell.text = "" if val is None else str(val)
+            # fill
+            if body_fill_rgb:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = body_fill_rgb
+            # align + font
+            tf = cell.text_frame
+            p = tf.paragraphs[0]
+            p.alignment = align
+            if p.runs:
+                for run in p.runs:
+                    run.font.size = font_size
+                    if body_font_rgb:
+                        run.font.color.rgb = body_font_rgb
+
+    return table
+
+# ------------------------------
+# Example usage
+# ------------------------------
+if __name__ == "__main__":
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[5])  # blank
+
+    data = {
+        "Name": ["Alice", "Bob", "Carol", "Dave"],
+        "Score": [92, 85, 88, 90],
+        "Passed": ["Yes", "Yes", "Yes", "Yes"],
+    }
+
+    table = add_table_from_dict(
+        slide,
+        data,
+        rows=None, cols=None,                    # infer size
+        left=Inches(0.8), top=Inches(1.3),      # position
+        width=Inches(8.5), height=Inches(1.8),  # total size (affects default col widths)
+        col_widths=[Inches(3), Inches(2.5), Inches(3)],  # per-column widths
+        row_height=Inches(0.4),                 # fixed height for every row
+        header=True,
+        font_size=Pt(12),
+        align=PP_ALIGN.CENTER,
+        header_fill="#DDE8FF",
+        body_fill=(255, 255, 255),
+        header_font_color="#0F2A5F",
+        body_font_color="#222222",
+    )
+
+    prs.save("styled_table.pptx")
+    print("Saved styled_table.pptx")
 
 
 
