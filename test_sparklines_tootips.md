@@ -1919,33 +1919,73 @@ TEMPLATE = """
 <meta charset="utf-8">
 <title>Wafer Summary</title>
 <style>
-  /* Basic, email-friendly styling */
-  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #111827; }
-  .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
-  .card {
-      border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04); background: #ffffff;
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    color: #111827;
+    margin: 0; padding: 0;
   }
-  h1 { font-size: 18px; margin: 0 0 12px 0; }
-  .legend { display:flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 16px; font-size: 12px; color:#374151; }
-  .swatch { display:inline-block; width: 12px; height: 12px; border:1px solid #d1d5db; margin-right: 6px; vertical-align:middle; }
+  .container {
+    max-width: 100%;
+    overflow-x: auto;           /* allows horizontal scroll if too wide */
+    padding: 8px;
+    background: #f9fafb;
+  }
+  .card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    min-width: 900px;
+  }
+  h1 {
+    font-size: 14px;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+  }
+  .legend {
+    display:flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 6px 0 10px;
+    font-size: 10px;
+    color:#374151;
+  }
+  .swatch { display:inline-block; width: 10px; height: 10px; border:1px solid #d1d5db; margin-right: 4px; vertical-align:middle; }
   .swatch.red { background:#fde2e2; }
   .swatch.yellow { background:#fff4cc; }
   .swatch.blue { background:#dbeafe; }
   .swatch.purple { background:#f3e8ff; }
 
-  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;       /* ensures cells shrink evenly */
+    font-size: 10px;           /* small font */
+    word-break: break-word;
+  }
   thead th {
-      position: sticky; top: 0; background: #f9fafb; z-index: 1;
-      border: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 12px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    padding: 4px;
+    font-weight: 600;
+    text-align: center;
   }
   tbody td {
-      border: 1px solid #e5e7eb; padding: 6px 8px; font-size: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 3px 4px;
+    text-align: right;
   }
-  .meta { white-space: nowrap; }
-  .meta:nth-child(odd) { background: #fcfcfd; }
-
-  .footer { margin-top: 10px; font-size: 11px; color: #6b7280; }
+  .meta {
+    text-align: left;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .footer {
+    margin-top: 6px;
+    font-size: 9px;
+    color: #6b7280;
+  }
 </style>
 </head>
 <body>
@@ -1961,40 +2001,41 @@ TEMPLATE = """
         <span><span class="swatch purple"></span>SITE OOS (4)</span>
       </div>
 
-      <table role="table">
-        <thead>
-          <tr>
-            {% for h in meta_headers %}
-              <th class="meta">{{ h }}</th>
-            {% endfor %}
-            {% for h in wafer_headers %}
-              <th style="text-align:right;">{{ h }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
+      <div style="overflow-x:auto;">
+        <table role="table">
+          <thead>
             <tr>
-              {% for m in r.meta %}
-                <td class="meta">{{ m }}</td>
+              {% for h in meta_headers %}
+                <th class="meta">{{ h }}</th>
               {% endfor %}
-              {% for cell in r.w_cells %}
-                <td style="{{ cell.style }}">{{ cell.val }}</td>
+              {% for h in wafer_headers %}
+                <th>{{ h }}</th>
               {% endfor %}
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr>
+                {% for m in r.meta %}
+                  <td class="meta">{{ m }}</td>
+                {% endfor %}
+                {% for cell in r.w_cells %}
+                  <td style="{{ cell.style }}">{{ cell.val }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
       <div class="footer">
-        Values in W01–W25 are shown to 6 decimals (blank if missing).
+        * Font reduced for readability. Values rounded to 6 decimals; blank = no data.
       </div>
     </div>
   </div>
 </body>
 </html>
 """
-
 env = Environment(
     loader=BaseLoader(),
     autoescape=select_autoescape(["html", "xml"])
