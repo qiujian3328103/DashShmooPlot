@@ -1830,3 +1830,205 @@ def pivot_wafers_with_flags(
     f_cols = [f"F{i:02d}" for i in range(1, n_wafers + 1)]
     out = out[group_cols + w_cols + f_cols]
     return out
+
+
+
+import pandas as pd
+import numpy as np
+from email.message import EmailMessage
+import smtplib, ssl
+from jinja2 import Environment, BaseLoader, select_autoescape
+
+# ==========================
+# 1) YOUR DATAFRAME GOES HERE
+# ==========================
+# Example (replace with your real df):
+data = [
+    ["lot1","W01","step1","item1",0.3,"AVG",0.1,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None, 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ["lot1","W02","step1","item2",0.4,"AVG",None,None,None,None,None,None,None,None,None,0.2,0.1,None,None,None,None,None,None,None,None,None,None,None,None,None, 0,0,0,0,0,0,0,0,0,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ["lot1","W03","step1","item3",0.2,"AVG",None,None,None,None,None,None,0.3,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None, 0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+]
+cols = (
+    ["root_lot_id","wafer_id","metro_step_seq","metro_item_id","value","subitem_id"] +
+    [f"W{i:02d}" for i in range(1,26)] +
+    [f"F{i:02d}" for i in range(1,26)]
+)
+df = pd.DataFrame(data, columns=cols)
+
+# ====================================
+# 2) CONFIG: which columns to display
+# ====================================
+META_COLS = ["root_lot_id","wafer_id","metro_step_seq","metro_item_id","value","subitem_id"]
+W_COLS = [f"W{i:02d}" for i in range(1,26)]
+F_COLS = [f"F{i:02d}" for i in range(1,26)]
+
+# =================================================
+# 3) Format and color mapping helpers for rendering
+# =================================================
+FLAG_BG = {
+    0: "",             # no color
+    1: "#fde2e2",      # light red
+    2: "#fff4cc",      # light yellow
+    3: "#dbeafe",      # light blue
+    4: "#f3e8ff",      # light purple
+}
+
+def fmt_w_value(x):
+    """Format wafer numeric cell to 6 decimals, blank if NaN/None."""
+    if x is None or (isinstance(x, float) and np.isnan(x)):
+        return ""
+    try:
+        return f"{float(x):.6f}"
+    except Exception:
+        return str(x)
+
+def row_to_renderable(row):
+    """Turn a df row into a structure the template can loop through."""
+    # metadata fields as strings
+    meta = [str(row.get(c, "")) for c in META_COLS]
+
+    # wafer value cells with per-cell inline styles based on flags
+    w_cells = []
+    for i, wcol in enumerate(W_COLS, start=1):
+        fcol = F_COLS[i-1]
+        w_val = fmt_w_value(row.get(wcol, np.nan))
+        flag = row.get(fcol, 0)
+        try:
+            fcode = int(flag) if not pd.isna(flag) else 0
+        except Exception:
+            fcode = 0
+
+        bg = FLAG_BG.get(fcode, "")
+        style = (
+            f"background-color:{bg};"
+            "text-align:right;padding:6px 8px;border:1px solid #e5e7eb;"
+            "font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;"
+        )
+        w_cells.append({"val": w_val, "style": style})
+    return {"meta": meta, "w_cells": w_cells}
+
+render_rows = [row_to_renderable(r) for _, r in df.iterrows()]
+
+# ==========================
+# 4) Jinja2 HTML email
+# ==========================
+TEMPLATE = """
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Wafer Summary</title>
+<style>
+  /* Basic, email-friendly styling */
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #111827; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+  .card {
+      border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04); background: #ffffff;
+  }
+  h1 { font-size: 18px; margin: 0 0 12px 0; }
+  .legend { display:flex; flex-wrap: wrap; gap: 12px; margin: 8px 0 16px; font-size: 12px; color:#374151; }
+  .swatch { display:inline-block; width: 12px; height: 12px; border:1px solid #d1d5db; margin-right: 6px; vertical-align:middle; }
+  .swatch.red { background:#fde2e2; }
+  .swatch.yellow { background:#fff4cc; }
+  .swatch.blue { background:#dbeafe; }
+  .swatch.purple { background:#f3e8ff; }
+
+  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  thead th {
+      position: sticky; top: 0; background: #f9fafb; z-index: 1;
+      border: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 12px;
+  }
+  tbody td {
+      border: 1px solid #e5e7eb; padding: 6px 8px; font-size: 12px;
+  }
+  .meta { white-space: nowrap; }
+  .meta:nth-child(odd) { background: #fcfcfd; }
+
+  .footer { margin-top: 10px; font-size: 11px; color: #6b7280; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Wafer Result Summary</h1>
+
+      <div class="legend">
+        <span><span class="swatch"></span>No flag (0)</span>
+        <span><span class="swatch red"></span>OOS (1)</span>
+        <span><span class="swatch yellow"></span>OOC (2)</span>
+        <span><span class="swatch blue"></span>STD OOC (3)</span>
+        <span><span class="swatch purple"></span>SITE OOS (4)</span>
+      </div>
+
+      <table role="table">
+        <thead>
+          <tr>
+            {% for h in meta_headers %}
+              <th class="meta">{{ h }}</th>
+            {% endfor %}
+            {% for h in wafer_headers %}
+              <th style="text-align:right;">{{ h }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              {% for m in r.meta %}
+                <td class="meta">{{ m }}</td>
+              {% endfor %}
+              {% for cell in r.w_cells %}
+                <td style="{{ cell.style }}">{{ cell.val }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        Values in W01–W25 are shown to 6 decimals (blank if missing).
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+env = Environment(
+    loader=BaseLoader(),
+    autoescape=select_autoescape(["html", "xml"])
+)
+template = env.from_string(TEMPLATE)
+
+html_body = template.render(
+    meta_headers=META_COLS,
+    wafer_headers=W_COLS,
+    rows=render_rows,
+)
+
+# =====================================
+# 5) Send the HTML email (via SMTP)
+# =====================================
+SMTP_HOST = "smtp.gmail.com"        # e.g., "smtp.gmail.com"
+SMTP_PORT = 465                     # 465 (SSL) or 587 (STARTTLS)
+SMTP_USER = "you@example.com"       # your SMTP username / email
+SMTP_PASS = "YOUR_APP_PASSWORD"     # app password (for Gmail) or SMTP password
+FROM_EMAIL = "you@example.com"
+TO_EMAIL = ["someone@example.com"]  # list of recipients
+SUBJECT = "Wafer Result Summary"
+
+msg = EmailMessage()
+msg["Subject"] = SUBJECT
+msg["From"] = FROM_EMAIL
+msg["To"] = ", ".join(TO_EMAIL)
+msg.set_content("HTML version required.")  # plain text fallback
+msg.add_alternative(html_body, subtype="html")
+
+# SSL (port 465)
+context = ssl.create_default_context()
+with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+    server.login(SMTP_USER, SMTP_PASS)
+    server.send_message(msg)
+
+print("Email sent.")
