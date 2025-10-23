@@ -1756,3 +1756,77 @@ def insert_spc_dataframe(con: duckdb.DuckDBPyConnection, df: pd.DataFrame):
 
 
 
+import pandas as pd
+import numpy as np
+
+# ---- Function under test (same as I gave you) ----
+def pivot_wafers_with_flags(
+    df,
+    n_wafers=25,
+    lot_col="root_lot_id",
+    item_col="metro_item_id",
+    step_col="metro_step_seq",
+    wafer_col="wafer_id",
+    value_col="fab_value",
+    oos_col="oos_fail",
+    ooc_col="ooc_fail",
+    std_col="std_ooc_fail",
+    site_oos_col="site_oos_fail",
+):
+    df = df.copy()
+
+    def norm_w(w):
+        w = str(w).strip().upper()
+        if w.startswith("W"):
+            num = w[1:]
+            if num.isdigit():
+                return f"W{int(num):02d}"
+        return w
+
+    df[wafer_col] = df[wafer_col].map(norm_w)
+
+    # Coerce TRUE/FALSE strings to booleans if necessary
+    for c in [oos_col, ooc_col, std_col, site_oos_col]:
+        if df[c].dtype == object:
+            df[c] = df[c].astype(str).str.upper().map({"TRUE": True, "FALSE": False}).fillna(df[c])
+
+    def row_flag(r):
+        if bool(r[oos_col]): return 1
+        if bool(r[ooc_col]): return 2
+        if bool(r[std_col]): return 3
+        if bool(r[site_oos_col]): return 4
+        return 0
+
+    df["flag_code"] = df.apply(row_flag, axis=1).astype(int)
+
+    group_cols = [lot_col, item_col, step_col]
+    all_wafers = [f"W{i:02d}" for i in range(1, n_wafers + 1)]
+
+    # Pivot values (mean for duplicates)
+    pv_val = (
+        pd.pivot_table(
+            df, index=group_cols, columns=wafer_col, values=value_col, aggfunc="mean"
+        )
+        .reindex(columns=all_wafers)
+        .sort_index()
+    )
+
+    # Pivot flags (min => highest severity code since 1 is most severe)
+    pv_flag = (
+        pd.pivot_table(
+            df, index=group_cols, columns=wafer_col, values="flag_code", aggfunc="min"
+        )
+        .reindex(columns=all_wafers)
+        .fillna(0)
+        .astype(int)
+        .sort_index()
+    )
+    pv_flag.columns = [f"F{c[1:]}" for c in pv_flag.columns]
+
+    out = pd.concat([pv_val, pv_flag], axis=1).reset_index()
+
+    # Order columns
+    w_cols = all_wafers
+    f_cols = [f"F{i:02d}" for i in range(1, n_wafers + 1)]
+    out = out[group_cols + w_cols + f_cols]
+    return out
