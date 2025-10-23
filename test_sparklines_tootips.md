@@ -1992,6 +1992,7 @@ TEMPLATE = """
   <div class="container">
     <div class="card">
       <h1>Wafer Result Summary</h1>
+      <div class="subtle">Reporting week: {{ current_week }}</div>
 
       <div class="legend">
         <span><span class="swatch"></span>No flag (0)</span>
@@ -2001,7 +2002,7 @@ TEMPLATE = """
         <span><span class="swatch purple"></span>SITE OOS (4)</span>
       </div>
 
-      <div style="overflow-x:auto;">
+      <div class="table-wrap">
         <table role="table">
           <thead>
             <tr>
@@ -2029,45 +2030,46 @@ TEMPLATE = """
       </div>
 
       <div class="footer">
-        * Font reduced for readability. Values rounded to 6 decimals; blank = no data.
+        Values in W01–W25 are rounded to 6 decimals (blank if missing). Colors reflect F01–F25 flags.
       </div>
     </div>
   </div>
 </body>
 </html>
 """
-env = Environment(
-    loader=BaseLoader(),
-    autoescape=select_autoescape(["html", "xml"])
-)
-template = env.from_string(TEMPLATE)
+def send_instance_meail_to_user(df: pd.DataFrame, email_list: list[str]):
+    """
+    Renders a compact color-coded wafer table (W01..W25) from df and sends via s2cloudapi.
+    Expects F01..F25 present in df to color wafer cells.
+    Shows only META_COLS + W_COLS in the email table.
+    """
+    # Prepare date / subject context
+    today = datetime.date.today()
+    year, week_number = today.isocalendar()[:2]
+    current_week = f"{year}-W{week_number:02d}"
 
-html_body = template.render(
-    meta_headers=META_COLS,
-    wafer_headers=W_COLS,
-    rows=render_rows,
-)
+    # Build rows for template
+    rows = [_row_to_renderable(r) for _, r in df.iterrows()]
 
-# =====================================
-# 5) Send the HTML email (via SMTP)
-# =====================================
-SMTP_HOST = "smtp.gmail.com"        # e.g., "smtp.gmail.com"
-SMTP_PORT = 465                     # 465 (SSL) or 587 (STARTTLS)
-SMTP_USER = "you@example.com"       # your SMTP username / email
-SMTP_PASS = "YOUR_APP_PASSWORD"     # app password (for Gmail) or SMTP password
-FROM_EMAIL = "you@example.com"
-TO_EMAIL = ["someone@example.com"]  # list of recipients
-SUBJECT = "Wafer Result Summary"
+    # Jinja template
+    template_dir = os.path.dirname(os.path.abspath(__file__))
+    template_filename = "email_template.html"
 
-msg = EmailMessage()
-msg["Subject"] = SUBJECT
-msg["From"] = FROM_EMAIL
-msg["To"] = ", ".join(TO_EMAIL)
-msg.set_content("HTML version required.")  # plain text fallback
-msg.add_alternative(html_body, subtype="html")
+    env = Environment(loader=FileSystemLoader(template_dir))
+    template = env.get_template(template_filename)
 
-# SSL (port 465)
-context = ssl.create_default_context()
+    html_content = template.render(
+        meta_headers=META_COLS,
+        wafer_headers=W_COLS,
+        rows=rows,
+        current_week=current_week,
+    )
+
+    s2.send_email(
+        to=email_list,
+        subject=f"Wafer Result Summary — {current_week}",
+        html_content=html_content
+    )
 with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
     server.login(SMTP_USER, SMTP_PASS)
     server.send_message(msg)
