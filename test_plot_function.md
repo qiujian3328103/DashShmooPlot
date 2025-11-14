@@ -366,3 +366,357 @@ def update_yaxis(y_range, reset_clicks):
 if __name__ == "__main__":
     app.run(debug=True)
 ```
+
+
+```python
+import pandas as pd
+import plotly.graph_objects as go
+import numpy as np
+from plotly.colors import qualitative
+from typing import Optional
+
+palette_name = "plotly"
+COLOR_PALETTE = getattr(qualitative, palette_name, qualitative.Set3)
+
+
+def plot_spec(
+    df: pd.DataFrame,
+    timestamp_col: str = 'timestamp',
+    value_col: str = 'value',
+    group_col: str = None,
+    x_col: str = None,
+    usl: Optional[float] = None,
+    lsl: Optional[float] = None,
+    ucl: Optional[float] = None,
+    lcl: Optional[float] = None,
+    target: Optional[float] = None,
+    auto_limits: bool = True,
+    show_annotations: bool = True,
+    show_zones: bool = True,
+    show_rangeslider: bool = True,
+):
+    df = df.copy()
+
+    # --- basic validation ---
+    required = {timestamp_col, value_col}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing columns: {missing}")
+
+    # sort and ensure datetime
+    df[timestamp_col] = pd.to_datetime(df[timestamp_col])
+    df.sort_values(by=timestamp_col, inplace=True)
+
+    # numeric x index (for spacing) – we hide tick labels anyway
+    if x_col is not None and x_col in df.columns:
+        df["__x_index__"] = df[x_col].astype(int)
+    else:
+        df["__x_index__"] = np.arange(len(df))
+
+    # helper to convert limits safely
+    def _to_float_or_none(x):
+        return None if x is None else float(x)
+
+    usl = _to_float_or_none(usl)
+    lsl = _to_float_or_none(lsl)
+    ucl = _to_float_or_none(ucl)
+    lcl = _to_float_or_none(lcl)
+    target = _to_float_or_none(target)
+
+    # --- auto control limits (3-sigma around target) ---
+    if auto_limits:
+        if target is None:
+            target = float(df[value_col].mean())
+        sigma = float(df[value_col].std(ddof=1)) if len(df) > 1 else 0.0
+        if sigma > 0:
+            if lcl is None:
+                lcl = target - 3 * sigma
+            if ucl is None:
+                ucl = target + 3 * sigma
+
+    # --- violations (only if lcl & ucl exist) ---
+    if lcl is not None and ucl is not None:
+        viol_mask = (df[value_col] < lcl) | (df[value_col] > ucl)
+    else:
+        viol_mask = pd.Series(False, index=df.index)
+
+    violations = df[viol_mask]
+
+    # --- hover data ---
+    raw_hover_cols = ['root_lot_id', 'wafer_id', 'tkout_time',
+                      'fab_value', 'item_id', 'step_seq']
+    hover_cols = [c for c in raw_hover_cols if c in df.columns]
+    hover_template = ""
+    for i, col in enumerate(hover_cols):
+        hover_template += f"{col}: %{{customdata[{i}]}}<br>"
+    hover_template = hover_template + f"{value_col}: %{{y}}<extra></extra>"
+
+    # --- main data traces (grouped or not) ---
+    traces = []
+
+    if group_col and group_col in df.columns:
+        group_values = df[group_col].unique()
+        color_map = {
+            g: COLOR_PALETTE[i % len(COLOR_PALETTE)]
+            for i, g in enumerate(group_values)
+        }
+
+        for g in group_values:
+            gdf = df[df[group_col] == g]
+            custom_data = gdf[hover_cols].values if hover_cols else None
+
+            traces.append(
+                go.Scatter(
+                    x=gdf["__x_index__"],
+                    y=gdf[value_col],
+                    mode='lines+markers',
+                    name=str(g),
+                    line=dict(color=color_map[g], width=2),
+                    marker=dict(color=color_map[g], size=8, symbol='circle'),
+                    customdata=custom_data,
+                    hovertemplate=hover_template,
+                )
+            )
+    else:
+        custom_data = df[hover_cols].values if hover_cols else None
+        traces.append(
+            go.Scatter(
+                x=df["__x_index__"],
+                y=df[value_col],
+                mode='lines+markers',
+                name="Data",
+                line=dict(color='black', width=2),
+                marker=dict(size=8, symbol='circle'),
+                customdata=custom_data,
+                hovertemplate=hover_template,
+            )
+        )
+
+    # violation markers (separate trace)
+    if not violations.empty:
+        traces.append(
+            go.Scatter(
+                x=violations["__x_index__"],
+                y=violations[value_col],
+                mode='markers',
+                name="Violations",
+                marker=dict(
+                    color='red',
+                    size=12,
+                    symbol='circle-open',
+                    opacity=0.7,
+                ),
+                hoverinfo='all',
+            )
+        )
+
+    # --- x-range fix for single point ---
+    xmin, xmax = df["__x_index__"].min(), df["__x_index__"].max()
+    if xmin == xmax:
+        xmin -= 0.5
+        xmax += 0.5
+
+    # --- compute nice y-range (spec centered) ---
+    vals_for_range = [df[value_col].min(), df[value_col].max()]
+    for v in [lsl, lcl, ucl, usl, target]:
+        if v is not None and np.isfinite(v):
+            vals_for_range.append(v)
+
+    y_min = min(vals_for_range)
+    y_max = max(vals_for_range)
+    span = y_max - y_min if y_max > y_min else 1.0
+
+    # choose center: prefer spec band, then target, then middle of data
+    if (lsl is not None) and (usl is not None):
+        center = (lsl + usl) / 2.0
+    elif target is not None:
+        center = target
+    else:
+        center = (y_min + y_max) / 2.0
+
+    half = span * 0.6
+    y_lower = min(y_min, center - half)
+    y_upper = max(y_max, center + half)
+
+    pad = 0.05 * span
+    y_lower -= pad
+    y_upper += pad
+
+    # --- shapes for zones + horizontal lines ---
+    shapes = []
+    annotations = []
+
+    # Per-region zones: only draw region if needed limits exist
+    if show_zones:
+        # below LSL -> red (requires LSL)
+        if lsl is not None:
+            shapes.append(
+                dict(
+                    type="rect",
+                    xref="x", x0=xmin, x1=xmax,
+                    yref="y", y0=y_lower, y1=lsl,
+                    line=dict(width=0),
+                    fillcolor='#ffccc7',    # red-ish
+                    opacity=0.35,
+                )
+            )
+
+        # between LSL and LCL -> yellow (requires both)
+        if (lsl is not None) and (lcl is not None) and (lsl < lcl):
+            shapes.append(
+                dict(
+                    type="rect",
+                    xref="x", x0=xmin, x1=xmax,
+                    yref="y", y0=lsl, y1=lcl,
+                    line=dict(width=0),
+                    fillcolor='#fff1b8',    # yellow-ish
+                    opacity=0.35,
+                )
+            )
+
+        # between LCL and UCL -> green (requires both)
+        if (lcl is not None) and (ucl is not None) and (lcl < ucl):
+            shapes.append(
+                dict(
+                    type="rect",
+                    xref="x", x0=xmin, x1=xmax,
+                    yref="y", y0=lcl, y1=ucl,
+                    line=dict(width=0),
+                    fillcolor='#cfead1',    # green-ish
+                    opacity=0.35,
+                )
+            )
+
+        # between UCL and USL -> yellow (requires both)
+        if (ucl is not None) and (usl is not None) and (ucl < usl):
+            shapes.append(
+                dict(
+                    type="rect",
+                    xref="x", x0=xmin, x1=xmax,
+                    yref="y", y0=ucl, y1=usl,
+                    line=dict(width=0),
+                    fillcolor='#fff1b8',    # yellow-ish
+                    opacity=0.35,
+                )
+            )
+
+        # above USL -> red (requires USL)
+        if usl is not None:
+            shapes.append(
+                dict(
+                    type="rect",
+                    xref="x", x0=xmin, x1=xmax,
+                    yref="y", y0=usl, y1=y_upper,
+                    line=dict(width=0),
+                    fillcolor='#ffccc7',    # red-ish
+                    opacity=0.35,
+                )
+            )
+
+    # helper: add "infinite" horizontal lines and optional annotations
+    def add_limit_line_and_label(name, y, color, dash="dash", width=2, show_label=True):
+        if y is None:
+            return
+
+        # horizontal line across full plot width
+        shapes.append(
+            dict(
+                type="line",
+                xref="paper", x0=0, x1=1,  # span full width of plot
+                yref="y", y0=y, y1=y,
+                line=dict(color=color, width=width, dash=dash),
+            )
+        )
+
+        if not (show_annotations and show_label):
+            return
+
+        text = f"{name} = {y:.4g}"
+
+        # annotation slightly inside the right edge of the plotting area
+        annotations.append(
+            dict(
+                xref="paper",
+                yref="y",
+                x=0.99,          # a bit inside the right edge
+                y=y,
+                xanchor="right", # align text inside
+                yanchor="middle",
+                text=text,
+                showarrow=False,
+                font=dict(color=color, size=10),
+                align="right",
+                xshift=0,
+                bgcolor="rgba(255,255,255,0.7)",
+                bordercolor=color,
+                borderwidth=0,
+                borderpad=1,
+            )
+        )
+
+    # control limits (blue dashed)
+    add_limit_line_and_label("UCL", ucl, "#1890ff", dash="dash", width=2)
+    add_limit_line_and_label("LCL", lcl, "#1890ff", dash="dash", width=2)
+
+    # spec limits (red dashed)
+    add_limit_line_and_label("USL", usl, "#ff4d4f", dash="dash", width=2)
+    add_limit_line_and_label("LSL", lsl, "#ff4d4f", dash="dash", width=2)
+
+    # target line (gray dotted)
+    add_limit_line_and_label("Target", target, "#595959", dash="dot", width=1.5)
+
+    # --- xaxis config (with optional rangeslider) ---
+    xaxis = dict(
+        title=None,
+        zeroline=False,
+        showticklabels=False,
+        range=[xmin, xmax],
+    )
+    if show_rangeslider:
+        xaxis["rangeslider"] = dict(visible=True)
+
+    # --- layout ---
+    layout = go.Layout(
+        title=None,
+        xaxis=xaxis,
+        yaxis=dict(
+            title=value_col,
+            zeroline=False,
+            range=[y_lower, y_upper],
+        ),
+        legend=dict(
+            x=1.01, y=1,
+            xanchor='right', yanchor='top',
+            orientation='v',
+            bgcolor="rgba(255, 255, 255, 0)",
+            bordercolor="rgba(0, 0, 0, 0)",
+            borderwidth=1
+        ),
+        hovermode='closest',
+        margin=dict(l=0, r=10, t=25, b=0),  # small right margin
+        shapes=shapes,
+        annotations=annotations,
+    )
+
+    fig = go.Figure(data=traces, layout=layout)
+    return fig
+
+
+if __name__ == "__main__":
+    df = pd.read_excel(r"C:\\Users\\Jian Qiu\\Downloads\\test_data1.xlsx")
+    fig = plot_spec(
+        df,
+        timestamp_col="tkout_time",
+        value_col="fab_value",
+        group_col="part_id",
+        usl=2.0, lsl=0.0, target=0.25,
+        lcl=0.1, ucl=0.5,
+        auto_limits=True,
+        show_zones=True,
+        show_rangeslider=True,
+        show_annotations=True,
+    )
+    fig.show()
+
+
+```
